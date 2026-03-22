@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables
+.env
+
+# Node / Frontend
+node_modules/
+dist/
+npm-debug.log
+yarn-error.log
+.DS_Store
+

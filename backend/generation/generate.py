@@ -1,0 +1,77 @@
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_community.chat_models import ChatOllama
+#from voice_to_text import transcribe_audio
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from retrieval.retriever import retrieve_document
+from retrieval.multi_query_retriever import multi_query_retriever
+from langchain_openai import ChatOpenAI
+from dotenv import load_dotenv
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
+
+def generate_response(query:str,vector_store_path:str)->str:
+    
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+    retrieved_document="\n\n".join(doc.page_content for doc in retrieve_document(query,vector_store_path))
+    RAG_PROMPT =f"""
+    You are an assistant specialising in Nvidia financial reports.
+    Answer the question using ONLY the context below.
+    If the answer is not in the context, say "I don't have enough information."
+
+    Context:
+    {retrieved_document}
+
+    Question:
+    {query}
+
+    Answer:
+    """  
+    response=llm.invoke(RAG_PROMPT)
+
+    return response.content
+
+def generate_response_from_multi_query_retriever(query:str,vector_store_path:str)->str:
+    
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+    retrieved_document="\n\n".join(multi_query_retriever(query,vector_store_path))
+    RAG_PROMPT =f"""
+    You are an assistant specialising in Nvidia financial reports.
+    Answer the question using ONLY the context below.
+    If the answer is not in the context, say "I don't have enough information."
+
+    Context:
+    {retrieved_document}
+
+    Question:
+    {query}
+
+    Answer:
+    """  
+    response=llm.invoke(RAG_PROMPT)
+
+    return response.content
+
+
+
+def generate_response_from_voice(vector_store_path:str)->str:
+    query=transcribe_audio()
+
+    return generate_response(query,vector_store_path)
+
+    
+    
+
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# vector_store_path=os.path.join(BASE_DIR, "chroma_db") 
+
+# print(generate_response_from_multi_query_retriever("What were Nvidia's revenue and earnings in the latest quarter?",vector_store_path))
+# #print(generate_response_from_voice(vector_store_path))
+
+
+    

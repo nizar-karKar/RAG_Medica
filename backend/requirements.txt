@@ -1,0 +1,17 @@
+langchain_community 
+langchain-text-splitters 
+pypdf 
+langchain-core 
+chromadb==0.4.24 
+opentelemetry-api==1.22.0 
+opentelemetry-sdk==1.22.0 
+langchain-ollama 
+"numpy<2.0"
+elevenlabs
+sounddevice
+scipy
+pandas
+fastapi
+uvicorn[standard]
+streamlit
+requests
