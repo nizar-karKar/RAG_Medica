@@ -12,7 +12,7 @@ from retrieval.vector_store import store_in_chromadb
 
 
 class IngestionPipeline:
-    def __init__(self, document_path, doc_title="Document"):
+    def __init__(self, document_path=None, doc_title="Document"):
         self.document_path = document_path
         self.doc_title = doc_title
 

@@ -3,7 +3,7 @@ import os
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BACKEND_DIR)
 
-from ingestion.pipeline import IngestionPipeline
+#from ingestion.pipeline import IngestionPipeline
 from generation.generate import generate_response_from_multi_query_retriever
 
 class RagPipeline():
