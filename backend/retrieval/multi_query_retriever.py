@@ -40,7 +40,12 @@ Original question: {query}"""
     structured_response=llm.with_structured_output(list[str])
     multi_queries=structured_response.invoke(prompt)
 
-    return multi_queries['iterable']
+    if isinstance(multi_queries, dict):
+        return list(multi_queries.values())[0] if multi_queries else []
+    elif isinstance(multi_queries, list):
+        return multi_queries
+    else:
+        return [str(multi_queries)]
 
 def multi_query_retriever(query:str,vector_store_path:str)->list[str]:
     multi_queries=generate_multiple_queries(query)

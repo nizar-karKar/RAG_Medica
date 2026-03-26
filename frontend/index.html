@@ -1,13 +1,86 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>MedRAG Intelligence</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="logo">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 4H8V8H4V16H8V20H16V16H20V8H16V4Z" fill="#0ea5e9" stroke="#0ea5e9" stroke-width="2" stroke-linejoin="round"/>
+             </svg>
+             <h2>MedRAG AI</h2>
+          </div>
+          <p class="subtitle">Intelligent Medical Analysis System</p>
+        </div>
+
+        <div class="upload-section">
+          <h3>Knowledge Base</h3>
+          <p>Upload a new PDF to expand the system's medical insights.</p>
+          
+          <div class="drop-zone" id="dropZone">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Drag & Drop a PDF, or <span class="highlight">Browse</span></p>
+            <input type="file" id="fileInput" accept="application/pdf" hidden />
+          </div>
+          
+          <div class="upload-status" id="uploadStatus">
+            <!-- Dynamic elements go here -->
+          </div>
+        </div>
+
+        <div class="system-status">
+           <div class="status-indicator online"></div>
+           <span>System Online & Ready</span>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <header class="chat-header">
+           <div class="header-info">
+             <h1>Chat Interface</h1>
+             <p>Query your uploaded documents and embedded knowledge base.</p>
+           </div>
+        </header>
+
+        <div class="chat-container" id="chatContainer">
+          <div class="message assistant">
+             <div class="avatar">
+               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-5a7 7 0 0 1 7-7h1V5.73A2 2 0 1 1 12 2Z"></path><path d="M9 16v-3"></path><path d="M15 16v-3"></path></svg>
+             </div>
+             <div class="message-content">
+                Hello! I'm your MedRAG AI. Upload a medical document on the left, and ask me anything about the content.
+             </div>
+          </div>
+        </div>
+
+        <div class="input-area">
+          <form id="chatForm">
+            <div class="input-wrapper">
+              <input type="text" id="chatInput" placeholder="Ask about symptoms, medical records, or uploaded data..." autocomplete="off"/>
+              <button type="submit" id="sendBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

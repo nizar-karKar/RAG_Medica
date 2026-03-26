@@ -37,7 +37,7 @@ class IngestionPipeline:
         print("Starting ingestion pipeline...")
         loaded_documents = self.load_document()
         if not loaded_documents:
-            print("No valid NVIDIA documents found to process.")
+            print("No valid documents found to process.")
             return
 
         chunks = self.chunk_document(loaded_documents)
