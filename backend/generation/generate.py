@@ -17,13 +17,14 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 def generate_response(query:str,vector_store_path:str)->str:
     
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-    retrieved_document="\n\n".join(doc.page_content for doc in retrieve_document(query,vector_store_path))
+    retrieved_document=retrieve_document(query,vector_store_path)
     RAG_PROMPT =f"""
-    You are an assistant specialising in Nvidia financial reports.
+    You are a Medical  assistant specialising in analyzing patient's informations .
     Answer the question using ONLY the context below.
+    Critical : Give only the necessary information for the questions 
     If the answer is not in the context, say "I don't have enough information."
 
-    Context:
+    Context wich contains the patient's informations:
     {retrieved_document}
 
     Question:

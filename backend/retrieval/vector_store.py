@@ -10,7 +10,7 @@ def store_in_chromadb(chunks_with_metadata):
     embedding_model = OllamaEmbeddings(model="nomic-embed-text")
 
     vector_db = Chroma(
-        collection_name="nvidia-local-rag",
+        collection_name="medical-local-rag",
         embedding_function=embedding_model,
         persist_directory=CHROMA_DB_PATH
     )
