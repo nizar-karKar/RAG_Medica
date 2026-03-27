@@ -10,8 +10,8 @@ class RagPipeline():
     def __init__(self):
         self.vector_store_path = os.path.join(BACKEND_DIR, "chroma_db")
 
-    def run(self, query: str):
-        response = generate_response(query, self.vector_store_path)
+    def run(self, query: str, filename: str = None):
+        response = generate_response(query, self.vector_store_path, filename=filename)
         return {
             "answer": response
         }

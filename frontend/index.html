@@ -32,7 +32,7 @@
               <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <p>Drag & Drop a PDF, or <span class="highlight">Browse</span></p>
+            <p>Drag &amp; Drop a PDF, or <span class="highlight">Browse</span></p>
             <input type="file" id="fileInput" accept="application/pdf" hidden />
           </div>
           
@@ -43,7 +43,7 @@
 
         <div class="system-status">
            <div class="status-indicator online"></div>
-           <span>System Online & Ready</span>
+           <span>System Online &amp; Ready</span>
         </div>
       </div>
 
@@ -51,7 +51,7 @@
         <header class="chat-header">
            <div class="header-info">
              <h1>Chat Interface</h1>
-             <p>Query your uploaded documents and embedded knowledge base.</p>
+             <p>Query your uploaded documents via text or voice.</p>
            </div>
         </header>
 
@@ -61,12 +61,36 @@
                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-5a7 7 0 0 1 7-7h1V5.73A2 2 0 1 1 12 2Z"></path><path d="M9 16v-3"></path><path d="M15 16v-3"></path></svg>
              </div>
              <div class="message-content">
-                Hello! I'm your MedRAG AI. Upload a medical document on the left, and ask me anything about the content.
+                Hello! I'm your MedRAG AI. Upload a medical document on the left, then ask me anything via text or voice 🎙️
              </div>
           </div>
         </div>
 
         <div class="input-area">
+          <!-- Voice Query Bar -->
+          <div class="voice-bar" id="voiceBar">
+            <div class="voice-status" id="voiceStatus">
+              <span id="voiceStatusText">Press <strong>Start</strong> to record your query</span>
+            </div>
+            <div class="voice-controls">
+              <button id="startVoiceBtn" class="voice-btn start" title="Start recording">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                Start
+              </button>
+              <button id="stopVoiceBtn" class="voice-btn stop" title="Stop and send" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                </svg>
+                Stop &amp; Send
+              </button>
+            </div>
+          </div>
+
+          <!-- Text Query Form -->
           <form id="chatForm">
             <div class="input-wrapper">
               <input type="text" id="chatInput" placeholder="Ask about symptoms, medical records, or uploaded data..." autocomplete="off"/>

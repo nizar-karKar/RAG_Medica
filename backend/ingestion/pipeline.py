@@ -30,8 +30,8 @@ class IngestionPipeline:
         
     def store_in_chromadb(self, chunks_with_metadata):
         print("Storing in ChromaDB...")
-        # Note: store_in_chromadb handles the embeddings natively using OllamaEmbeddings
-        store_in_chromadb(chunks_with_metadata)
+        # Pass the doc_title as the explicit filename parameter
+        store_in_chromadb(chunks_with_metadata, filename=self.doc_title)
     
     def run_pipeline(self):
         print("Starting ingestion pipeline...")

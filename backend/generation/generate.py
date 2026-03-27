@@ -2,7 +2,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_community.chat_models import ChatOllama
-#from voice_to_text import transcribe_audio
+from generation.voice_to_text import transcribe_audio
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -14,10 +14,10 @@ load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 
-def generate_response(query:str,vector_store_path:str)->str:
+def generate_response(query:str, vector_store_path:str, filename: str = None)->str:
     
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-    retrieved_document=retrieve_document(query,vector_store_path)
+    retrieved_document = retrieve_document(query, vector_store_path, filename=filename)
     RAG_PROMPT =f"""
     You are a Medical  assistant specialising in analyzing patient's informations .
     Answer the question using ONLY the context below.
@@ -59,10 +59,16 @@ def generate_response_from_multi_query_retriever(query:str,vector_store_path:str
 
 
 
-def generate_response_from_voice(vector_store_path:str)->str:
-    query=transcribe_audio()
-
-    return generate_response(query,vector_store_path)
+def generate_response_from_voice(vector_store_path: str, audio_path: str = None, filename: str = None) -> str:
+    """Transcribe audio then run the RAG pipeline.
+    
+    Args:
+        vector_store_path: Path to the ChromaDB directory.
+        audio_path: Path to the audio file to transcribe. If None, records from mic.
+        filename: Optional metadata filter to restrict retrieval to a specific document.
+    """
+    query = transcribe_audio(audio_path=audio_path)
+    return generate_response(query, vector_store_path, filename=filename)
 
     
     

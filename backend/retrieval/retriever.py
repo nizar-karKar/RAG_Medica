@@ -1,7 +1,9 @@
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
-import os 
-def retrieve_document(query: str, vector_store_path: str, k: int = 1):
+import os
+from typing import Any, Optional
+
+def retrieve_document(query: str, vector_store_path: str, k: int = 4, filename: Optional[str] = None):
     embedding_model = OllamaEmbeddings(model="nomic-embed-text")
 
     vector_store = Chroma(
@@ -10,14 +12,23 @@ def retrieve_document(query: str, vector_store_path: str, k: int = 1):
         persist_directory=vector_store_path
     )
 
+    search_kwargs: dict[str, Any] = {"k": k}
+    if filename:
+        # Use metadata filtering to restrict search to a specific file
+        search_kwargs["filter"] = {"filename": filename}
+
     retriever = vector_store.as_retriever(
         search_type="similarity",
-        search_kwargs={"k": k}
+        search_kwargs=search_kwargs
     )
 
     retrieved_docs = retriever.invoke(query)
 
-    return retrieved_docs[0].page_content
+    if not retrieved_docs:
+        return ""
+
+    # Join multiple relevant chunks into one context string
+    return "\n\n".join([doc.page_content for doc in retrieved_docs])
 
 
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

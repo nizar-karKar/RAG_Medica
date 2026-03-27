@@ -1,12 +1,15 @@
 import os
 import shutil
 import uuid
+import tempfile
 
-from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi import APIRouter, File, UploadFile, HTTPException, Form
+from typing import Optional
 from api.schemas.request import QueryRequest
 from api.schemas.response import QueryResponse
 from api.dependencies.rag_pipeline import rag_pipeline
 from ingestion.pipeline import IngestionPipeline
+from generation.generate import generate_response_from_voice
 
 router = APIRouter()
 
@@ -18,7 +21,7 @@ if not os.path.exists(PDF_DOCS_DIR):
 
 @router.post("/query", response_model=QueryResponse)
 def query_rag(request: QueryRequest):
-    result = rag_pipeline.run(request.query)
+    result = rag_pipeline.run(request.query, filename=request.filename)
     return result
 
 
@@ -73,3 +76,37 @@ async def upload_document(file: UploadFile = File(...)):
         if os.path.exists(temp_dir_path):
             shutil.rmtree(temp_dir_path, ignore_errors=True)
             print(f"🧹 Cleaned up temp dir: {temp_dir_path}")
+
+
+@router.post("/voice-query", response_model=QueryResponse)
+async def voice_query(
+    audio: UploadFile = File(...),
+    filename: Optional[str] = Form(None),
+):
+    """
+    Accept a browser-recorded audio blob, transcribe it via ElevenLabs STT,
+    then run the RAG pipeline and return the AI answer.
+    The optional `filename` form-field filters results to a specific uploaded document.
+    """
+    CHROMA_DB_PATH = os.path.join(BACKEND_DIR, "chroma_db")
+
+    # Save the incoming audio blob to a temp file
+    suffix = ".webm"  # browsers produce WebM/Opus blobs via MediaRecorder
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        shutil.copyfileobj(audio.file, tmp)
+        tmp_audio_path = tmp.name
+
+    try:
+        answer = generate_response_from_voice(
+            vector_store_path=CHROMA_DB_PATH,
+            audio_path=tmp_audio_path,
+            filename=filename or None,
+        )
+        return {"answer": answer}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(tmp_audio_path):
+            os.remove(tmp_audio_path)

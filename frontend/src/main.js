@@ -185,3 +185,94 @@ const checkSystemHealth = async () => {
 
 checkSystemHealth();
 setInterval(checkSystemHealth, 30000);
+
+// ==== 4. Voice Query Functionality ==== //
+
+const voiceBar      = document.getElementById('voiceBar');
+const startVoiceBtn = document.getElementById('startVoiceBtn');
+const stopVoiceBtn  = document.getElementById('stopVoiceBtn');
+const voiceStatusText = document.getElementById('voiceStatusText');
+
+let mediaRecorder = null;
+let audioChunks   = [];
+let recordingTimer = null;
+let secondsElapsed = 0;
+
+const setVoiceRecording = (isRecording) => {
+  startVoiceBtn.disabled = isRecording;
+  stopVoiceBtn.disabled  = !isRecording;
+  voiceBar.classList.toggle('recording', isRecording);
+
+  if (isRecording) {
+    secondsElapsed = 0;
+    voiceStatusText.innerHTML = `<div class="recording-dot"></div> Recording… <span id="recTimer">0s</span>`;
+    recordingTimer = setInterval(() => {
+      secondsElapsed++;
+      const el = document.getElementById('recTimer');
+      if (el) el.textContent = `${secondsElapsed}s`;
+    }, 1000);
+  } else {
+    clearInterval(recordingTimer);
+    voiceStatusText.innerHTML = `Press <strong>Start</strong> to record your query`;
+  }
+};
+
+startVoiceBtn.addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+
+    // Prefer webm for broad browser support
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : 'audio/webm';
+
+    mediaRecorder = new MediaRecorder(stream, { mimeType });
+    mediaRecorder.addEventListener('dataavailable', (e) => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    });
+
+    mediaRecorder.start(100); // collect chunks every 100ms
+    setVoiceRecording(true);
+  } catch (err) {
+    voiceStatusText.innerHTML = `<span style="color:var(--error)">Microphone access denied</span>`;
+    console.error('Mic access error:', err);
+  }
+});
+
+stopVoiceBtn.addEventListener('click', () => {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+
+  mediaRecorder.stop();
+  mediaRecorder.stream.getTracks().forEach(t => t.stop()); // release mic
+  setVoiceRecording(false);
+
+  mediaRecorder.addEventListener('stop', async () => {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+    // Show in chat that voice is being processed
+    chatContainer.appendChild(createMessageElement('🎙️ <em>Voice query sent…</em>', true));
+    scrollToBottom();
+    showTypingIndicator();
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'voice_query.webm');
+
+    try {
+      const res = await axios.post(`${API_BASE_URL}/voice-query`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      removeTypingIndicator();
+      chatContainer.appendChild(createMessageElement(res.data.answer || 'No response received.'));
+    } catch (err) {
+      removeTypingIndicator();
+      let errorText = 'Voice query failed — could not reach the backend.';
+      if (err.response?.data?.detail) errorText = `Error: ${err.response.data.detail}`;
+      const errorElem = createMessageElement(errorText);
+      errorElem.querySelector('.message-content').style.color = 'var(--error)';
+      chatContainer.appendChild(errorElem);
+    } finally {
+      scrollToBottom();
+    }
+  }, { once: true });
+});
