@@ -97,12 +97,12 @@ async def voice_query(
         tmp_audio_path = tmp.name
 
     try:
-        answer = generate_response_from_voice(
+        result = generate_response_from_voice(
             vector_store_path=CHROMA_DB_PATH,
             audio_path=tmp_audio_path,
             filename=filename or None,
         )
-        return {"answer": answer}
+        return {"answer": result["answer"], "query": result["query"]}
     except Exception as e:
         import traceback
         traceback.print_exc()

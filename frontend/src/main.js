@@ -250,8 +250,9 @@ stopVoiceBtn.addEventListener('click', () => {
   mediaRecorder.addEventListener('stop', async () => {
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
 
-    // Show in chat that voice is being processed
-    chatContainer.appendChild(createMessageElement('🎙️ <em>Voice query sent…</em>', true));
+    // Placeholder bubble while we wait for the transcription
+    const placeholderMsg = createMessageElement('🎙️ <em>Transcribing voice query…</em>', true);
+    chatContainer.appendChild(placeholderMsg);
     scrollToBottom();
     showTypingIndicator();
 
@@ -263,6 +264,15 @@ stopVoiceBtn.addEventListener('click', () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       removeTypingIndicator();
+
+      // Replace placeholder with the actual transcribed text
+      const transcribedText = res.data.query;
+      if (transcribedText) {
+        const contentEl = placeholderMsg.querySelector('.message-content');
+        contentEl.innerHTML =
+          `<span class="voice-badge">🎙️</span> ${transcribedText.replace(/\n/g, '<br>')}`;
+      }
+
       chatContainer.appendChild(createMessageElement(res.data.answer || 'No response received.'));
     } catch (err) {
       removeTypingIndicator();

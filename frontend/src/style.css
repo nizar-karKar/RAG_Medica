@@ -501,3 +501,18 @@ body {
   cursor: not-allowed;
   transform: none;
 }
+
+/* Voice badge shown in the user chat bubble for transcribed voice queries */
+.voice-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--accent-primary);
+  border-radius: 999px;
+  padding: 1px 7px;
+  margin-right: 6px;
+  vertical-align: middle;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
