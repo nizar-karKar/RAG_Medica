@@ -12,7 +12,7 @@ from retrieval.vector_store import store_in_chromadb
 
 
 class IngestionPipeline:
-    def __init__(self, document_path, doc_title="Document"):
+    def __init__(self, document_path=None, doc_title="Document"):
         self.document_path = document_path
         self.doc_title = doc_title
 
@@ -30,14 +30,14 @@ class IngestionPipeline:
         
     def store_in_chromadb(self, chunks_with_metadata):
         print("Storing in ChromaDB...")
-        # Note: store_in_chromadb handles the embeddings natively using OllamaEmbeddings
-        store_in_chromadb(chunks_with_metadata)
+        # Pass the doc_title as the explicit filename parameter
+        store_in_chromadb(chunks_with_metadata, filename=self.doc_title)
     
     def run_pipeline(self):
         print("Starting ingestion pipeline...")
         loaded_documents = self.load_document()
         if not loaded_documents:
-            print("No valid NVIDIA documents found to process.")
+            print("No valid documents found to process.")
             return
 
         chunks = self.chunk_document(loaded_documents)

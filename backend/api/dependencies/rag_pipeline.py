@@ -3,15 +3,15 @@ import os
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BACKEND_DIR)
 
-from ingestion.pipeline import IngestionPipeline
-from generation.generate import generate_response_from_multi_query_retriever
+#from ingestion.pipeline import IngestionPipeline
+from generation.generate import generate_response_from_multi_query_retriever,generate_response
 
 class RagPipeline():
     def __init__(self):
         self.vector_store_path = os.path.join(BACKEND_DIR, "chroma_db")
 
-    def run(self, query: str):
-        response = generate_response_from_multi_query_retriever(query, self.vector_store_path)
+    def run(self, query: str, filename: str = None):
+        response = generate_response(query, self.vector_store_path, filename=filename)
         return {
             "answer": response
         }

@@ -7,30 +7,39 @@ import os
 def document_chunking(loaded_document):
 
     text_splitter=RecursiveCharacterTextSplitter(
-        chunk_size=7500,
+        chunk_size=900,
         chunk_overlap=100
     )
 
-    nvidia_text_chunks=[]
-    for page in loaded_document:
-        chunks=text_splitter.split_text(page.page_content)
-        nvidia_text_chunks.extend(chunks)
+    # Use split_documents to preserve Document objects and their metadata (like 'source')
+    chunks=text_splitter.split_documents(loaded_document)
 
-    return nvidia_text_chunks
+    return chunks
 
 
 
-def add_metadata(chunks, doc_title):
+def add_metadata(chunks, doc_title=None):
     metadata_chunks = []
+    # Use a timestamp to distinguish different upload sessions of the same file
+    # and to make metadata unique for each upload
+    upload_timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    for chunk in chunks:
-        metadata = {
-            "title": doc_title,
-            "author": "company",  # Update based on document data
-            "date": str(datetime.today())
-        }
+    for i, chunk in enumerate(chunks):
+        # Extract filename from the original PyPDF metadata, fallback to doc_title if unavailable
+        source_path = chunk.metadata.get("source", "")
+        file_name = os.path.basename(source_path) if source_path else (doc_title or "unknown_document")
+        
+        # Extend the existing metadata with structured info
+        # This makes the metadata unique per file and per upload time
+        chunk.metadata.update({
+            "filename": file_name,
+            "title": file_name,
+            "author": "RAG System",
+            "upload_date": upload_timestamp,
+            "chunk_index": i
+        })
 
-        metadata_chunks.append(Document(page_content=chunk, metadata=metadata))
+        metadata_chunks.append(chunk)
 
     return metadata_chunks
 
