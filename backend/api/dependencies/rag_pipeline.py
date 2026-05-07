@@ -1,32 +1,40 @@
-import sys
 import os
+import sys
+from typing import Optional
+
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(BACKEND_DIR)
 
-#from ingestion.pipeline import IngestionPipeline
-from generation.generate import generate_response_from_multi_query_retriever,generate_response
+from generation.generate import ResponseGenerator, VoiceResponseGenerator
+from generation.voice_to_text import VoiceTranscriber
 
-class RagPipeline():
-    def __init__(self):
-        self.vector_store_path = os.path.join(BACKEND_DIR, "chroma_db")
 
-    def run(self, query: str, filename: str = None):
-        response = generate_response(query, self.vector_store_path, filename=filename)
-        return {
-            "answer": response
-        }
+class RagPipeline:
+    """Application-level orchestrator wired into the FastAPI dependencies."""
+
+    def __init__(
+        self,
+        vector_store_path: Optional[str] = None,
+        response_generator: Optional[ResponseGenerator] = None,
+        voice_generator: Optional[VoiceResponseGenerator] = None,
+    ):
+        self.vector_store_path = vector_store_path or os.path.join(
+            BACKEND_DIR, "chroma_db"
+        )
+        self.response_generator = response_generator or ResponseGenerator(
+            vector_store_path=self.vector_store_path
+        )
+        self.voice_generator = voice_generator or VoiceResponseGenerator(
+            response_generator=self.response_generator,
+            transcriber=VoiceTranscriber(),
+        )
+
+    def run(self, query: str, filename: Optional[str] = None) -> dict:
+        answer = self.response_generator.generate(query, filename=filename)
+        return {"answer": answer}
+
+    def run_voice(self, audio_path: str, filename: Optional[str] = None) -> dict:
+        return self.voice_generator.generate(audio_path=audio_path, filename=filename)
+
 
 rag_pipeline = RagPipeline()
-# # Instantiate the pipeline with default paths
-# rag_pipeline = RagPipeline()
-
-# if __name__ == "__main__":
-#     # Example execution to show it functions correctly
-#     test_query = "What were Nvidia's revenue and earnings in the latest quarter?"
-#     print(f"Executing RAG pipeline for query: '{test_query}'...\n")
-#     try:
-#         result = rag_pipeline.run_rag(test_query)
-#         print("✅ Pipeline Response:")
-#         print(result["answer"])
-#     except Exception as e:
-#         print(f"❌ Error occurred: {e}")
