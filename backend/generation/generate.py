@@ -60,29 +60,11 @@ def generate_response_from_multi_query_retriever(query:str,vector_store_path:str
 
 
 def generate_response_from_voice(vector_store_path: str, audio_path: str = None, filename: str = None) -> dict:
-    """Transcribe audio then run the RAG pipeline.
-
-    Args:
-        vector_store_path: Path to the ChromaDB directory.
-        audio_path: Path to the audio file to transcribe. If None, records from mic.
-        filename: Optional metadata filter to restrict retrieval to a specific document.
-
-    Returns:
-        A dict with keys ``query`` (the transcribed text) and ``answer`` (the RAG response).
-    """
+    """Transcribe audio then run the RAG pipeline."""
     query = transcribe_audio(audio_path=audio_path)
     answer = generate_response(query, vector_store_path, filename=filename)
     return {"query": query, "answer": answer}
 
     
-    
-
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# vector_store_path=os.path.join(BASE_DIR, "chroma_db") 
-
-# print(generate_response_from_multi_query_retriever("What were Nvidia's revenue and earnings in the latest quarter?",vector_store_path))
-# #print(generate_response_from_voice(vector_store_path))
-
-
+ 
     
