@@ -1,16 +1,70 @@
-
-
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
-from rank_bm25 import BM25Okapi
-import os
 import re
-from typing import Optional
+from typing import List, Optional
+
+from rank_bm25 import BM25Okapi
+
+from retrieval.vector_store import VectorStoreManager
 
 
-def tokenize(text: str) -> list[str]:
+def tokenize(text: str) -> List[str]:
     """Simple whitespace + punctuation tokenizer, lowercased."""
     return re.findall(r"\w+", text.lower())
+
+
+class KeywordRetriever:
+    """BM25 keyword retrieval over documents stored in ChromaDB."""
+
+    def __init__(
+        self,
+        vector_store: Optional[VectorStoreManager] = None,
+        vector_store_path: Optional[str] = None,
+    ):
+        if vector_store is None:
+            if vector_store_path is None:
+                raise ValueError(
+                    "Either vector_store or vector_store_path must be provided."
+                )
+            vector_store = VectorStoreManager(persist_directory=vector_store_path)
+        self.vector_store = vector_store
+
+    def retrieve(
+        self,
+        query: str,
+        k: int = 1,
+        filename: Optional[str] = None,
+    ) -> List[dict]:
+        raw = self.vector_store.get_all(filename=filename)
+        documents = raw["documents"]
+        metadatas = raw["metadatas"]
+
+        if not documents:
+            return []
+
+        tokenized_docs = [tokenize(doc) for doc in documents]
+        bm25 = BM25Okapi(tokenized_docs)
+        scores = bm25.get_scores(tokenize(query))
+
+        scored = [
+            {
+                "content": documents[i],
+                "metadata": metadatas[i],
+                "score": float(score),
+            }
+            for i, score in enumerate(scores)
+        ]
+        scored.sort(key=lambda x: x["score"], reverse=True)
+        return scored[:k]
+
+    def retrieve_as_context(
+        self,
+        query: str,
+        k: int = 4,
+        filename: Optional[str] = None,
+    ) -> str:
+        results = self.retrieve(query, k=k, filename=filename)
+        if not results:
+            return ""
+        return "\n\n".join(r["content"] for r in results)
 
 
 def keyword_retrieve(
@@ -18,65 +72,11 @@ def keyword_retrieve(
     vector_store_path: str,
     k: int = 1,
     filename: Optional[str] = None,
-) -> list[dict]:
-    """
-    Retrieve documents from ChromaDB using BM25 keyword matching.
-
-    Args:
-        query: The user's question.
-        vector_store_path: Path to the ChromaDB directory.
-        k: Number of top results to return.
-        filename: Optional metadata filter to restrict to a specific file.
-
-    Returns:
-        A list of dicts with keys: 'content', 'metadata', 'score'.
-    """
-
-    # ── Load all documents from ChromaDB ──────────────────────────────────
-    embedding_model = OllamaEmbeddings(model="nomic-embed-text")
-    vector_store = Chroma(
-        collection_name="medical-local-rag",
-        embedding_function=embedding_model,
-        persist_directory=vector_store_path,
+) -> List[dict]:
+    """Backward-compatible wrapper."""
+    return KeywordRetriever(vector_store_path=vector_store_path).retrieve(
+        query, k=k, filename=filename
     )
-
-    collection = vector_store._collection
-
-    if filename:
-        raw = collection.get(
-            where={"filename": filename},
-            include=["documents", "metadatas"],
-        )
-    else:
-        raw = collection.get(include=["documents", "metadatas"])
-
-    documents = raw["documents"]
-    metadatas = raw["metadatas"]
-
-    if not documents:
-        return []
-
-    # ── Build BM25 index ──────────────────────────────────────────────────
-    tokenized_docs = [tokenize(doc) for doc in documents]
-    bm25 = BM25Okapi(tokenized_docs)
-
-    # ── Score the query against all documents ─────────────────────────────
-    tokenized_query = tokenize(query)
-    scores = bm25.get_scores(tokenized_query)
-
-    # ── Rank and return top-k ─────────────────────────────────────────────
-    scored_results = []
-    for idx, score in enumerate(scores):
-        scored_results.append({
-            "content": documents[idx],
-            "metadata": metadatas[idx],
-            "score": float(score),
-        })
-
-    # Sort by score descending (higher = more relevant in BM25)
-    scored_results.sort(key=lambda x: x["score"], reverse=True)
-
-    return scored_results[:k]
 
 
 def keyword_retrieve_as_context(
@@ -85,13 +85,7 @@ def keyword_retrieve_as_context(
     k: int = 4,
     filename: Optional[str] = None,
 ) -> str:
-    """
-    Same as keyword_retrieve but returns a joined context string,
-    matching the interface of retriever.py's retrieve_document().
-    """
-    results = keyword_retrieve(query, vector_store_path, k=k, filename=filename)
-
-    if not results:
-        return ""
-
-    return "\n\n".join([r["content"] for r in results])
+    """Backward-compatible wrapper."""
+    return KeywordRetriever(vector_store_path=vector_store_path).retrieve_as_context(
+        query, k=k, filename=filename
+    )

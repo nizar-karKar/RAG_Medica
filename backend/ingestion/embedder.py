@@ -1,31 +1,22 @@
+from typing import List
+
 import ollama
-from ingestion.chunking import document_chunking
-from ingestion.loader import load_document
-import os
-
-# Function to generate embeddings for text chunks
-def generate_embeddings(text_chunks, model_name='nomic-embed-text'):
-    embeddings = []
-
-    for chunk in text_chunks:
-        # Generate the embedding for each chunk
-        embedding = ollama.embeddings(
-            model=model_name,
-            prompt=chunk
-        )
-
-        embeddings.append(embedding)
-
-    return embeddings
 
 
+class Embedder:
+    """Wraps an Ollama embedding model."""
 
-# if __name__ == '__main__':
-#     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    def __init__(self, model_name: str = "nomic-embed-text"):
+        self.model_name = model_name
 
-#     # Path to pdf_documents
-#     document_path = os.path.join(BASE_DIR, "pdf_documents")
-#     chunks=document_chunking(load_document(document_path))
+    def embed(self, text_chunks: List) -> List:
+        embeddings = []
+        for chunk in text_chunks:
+            embedding = ollama.embeddings(model=self.model_name, prompt=chunk)
+            embeddings.append(embedding)
+        return embeddings
 
-#     embedded_chunks=generate_embeddings(chunks)
-#     print(len(embedded_chunks))
+
+def generate_embeddings(text_chunks, model_name: str = "nomic-embed-text"):
+    """Backward-compatible wrapper."""
+    return Embedder(model_name=model_name).embed(text_chunks)
