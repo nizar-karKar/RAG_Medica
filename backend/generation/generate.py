@@ -6,7 +6,7 @@ from generation.voice_to_text import transcribe_audio
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from retrieval.retriever import retrieve_document
+from retrieval.hybrid_retriever import hybrid_retrieve_as_context
 from retrieval.multi_query_retriever import multi_query_retriever
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
@@ -17,7 +17,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 def generate_response(query:str, vector_store_path:str, filename: str = None)->str:
     
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
-    retrieved_document = retrieve_document(query, vector_store_path, filename=filename)
+    retrieved_document = hybrid_retrieve_as_context(query, vector_store_path, filename=filename)
     RAG_PROMPT =f"""
     You are a Medical  assistant specialising in analyzing patient's informations .
     Answer the question using ONLY the context below.

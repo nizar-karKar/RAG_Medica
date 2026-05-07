@@ -3,7 +3,7 @@ from langchain_ollama import OllamaEmbeddings
 import os
 from typing import Any, Optional
 
-def retrieve_document(query: str, vector_store_path: str, k: int = 4, filename: Optional[str] = None):
+def retrieve_document(query: str, vector_store_path: str, k: int = 2, filename: Optional[str] = None):
     embedding_model = OllamaEmbeddings(model="nomic-embed-text")
 
     vector_store = Chroma(
